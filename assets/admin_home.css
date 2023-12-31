@@ -1,0 +1,331 @@
+/* Reset some default styles */
+body, h1, h2, ul {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 0;
+}
+
+/*----------------------------------- Top ribbon CSS starts here ----------------------------------------------- */
+.top-ribbon {
+    background-color: #e2c4e0; 
+    height: 20px;
+    color: #fff;
+    text-align: center; 
+    padding: 10px 0px;
+    position: fixed;
+    top:0;
+    left:0;
+    right:0;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    width: 100%;
+    z-index: 1;
+}
+
+.top-ribbon-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #7f379b;
+    margin-left: 15px;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .user-info-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: #7f379b;
+    margin-right: 10px;
+  }
+
+  .user-info-text:hover::before {
+    content: "You have admin access in this page";
+    position: absolute;
+    bottom:-50px;
+    left:30%;
+    transform: translateX(-50%);
+    top: 100%;    
+    background-color: #7f379b;
+    color: white;
+    padding: 5px;
+    min-width: 170px; 
+    border-radius: 5px;
+    display: none;
+  }
+  
+  .user-info-text:hover::before {
+    display: block;
+  }
+
+  .user-profile-icon {
+    font-size: 26px;
+    margin-right: 10px;   
+    cursor: pointer;
+    color: #800080;
+  }
+ 
+   /* Style for the pop-up menu */
+   .popup-menu {
+    display: none;
+    position: absolute;
+    background-color: #800080;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    right: 30px;
+    height: 100px;
+    width: 200px;
+    top: 30px; 
+    z-index: 1;
+  }
+  
+  /* Style for pop-up menu items */
+  .popup-menu-item {
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  .popup-menu a:hover {
+    color: #e2c4e0; 
+    background-color: #7f379b; 
+  }
+
+/* ------------------------------- top ribbon style ends here---------------------------------------------------- */
+
+/* --------------------------------- Sidebar style starts here -------------------------------------------------- */
+.sidebar {
+    background-color: #7f379b; /* Darker purple background color */
+    color: #FFFFFF; /* Text color */
+    width: 230px;
+    height: 90%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    margin-top: 40px;
+    padding-top: 30px;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li.active a {
+  color: #000000; /* Change the text color on hover or when active */
+}
+
+.sidebar ul li:hover,
+.sidebar ul li.active {
+  background-color: #e2c4e0; /* Change the background color on hover or when active */
+  transition: background-color 0.3s ease; /* Add a smooth transition effect */
+}
+
+.sidebar ul li a {
+    text-decoration: none; 
+    color: #000; 
+    display: block; 
+    padding: 10px 15px; 
+}
+
+.sidebar nav ul {
+    list-style: none;
+}
+
+.sidebar nav ul li {
+    margin: 0;
+    padding: 10px;
+}
+
+.sidebar nav ul li a {
+    display: block;
+    text-decoration: none;
+    color: #FFFFFF;
+    padding: 10px 10px;
+}
+
+.toggle-sidebar {
+  background-color: #7f379b;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none; 
+  z-index: 2; 
+}
+
+
+/* --------------------------------- Sidebar style ends here -------------------------------------------------- */
+
+
+/* --------------------------------- dashboard css starts here -------------------------------------------------- */
+
+main {
+    margin-top: 30px;
+    margin-left: 250px; 
+    padding: 20px;
+}
+
+.content {
+    background-color: #FFFFFF; 
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    border-radius: 4px; 
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+    display: flex;
+    justify-content: space-evenly; 
+    flex-direction: row;
+    }
+
+h1 {
+    color: #7f379b;  
+    text-align: center;  
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.card {
+    width: 200px;
+    height: 150px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    margin: 10px 0; 
+}
+
+h3 {
+    font-size: 22px;
+    margin: 0;
+}
+
+p {
+    font-size: 40px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+/* --------------------------------- dashboard css ends here -------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+  .top-ribbon {
+    flex-direction: row;    
+}
+
+.user-info {
+    margin-top: 5px;
+    margin-right: 5px;
+}
+
+.user-info-text {
+    margin-right: 10px;
+}
+
+  .sidebar {
+    width: 60px; /* Adjust the width for smaller screens */
+    padding-top: 10px; 
+    height: 100%;
+    transition: width 0.3s ease; 
+}
+
+.sidebar.expanded {
+  display: block; 
+  width: 230px;
+  transition: width 0.3s ease; 
+  overflow-y: auto;
+  margin-top: 40px;
+  padding-top: 30px;
+}
+
+.toggle-sidebar {
+  display: block;
+  font-size: large;
+  color: #800080;
+  background-color: #f2f2f2;
+  position: absolute; 
+  top: 62px; 
+  left: 85px; 
+  transform: translate(-50%, -50%);
+  z-index: 3; 
+  cursor: pointer;
+  transition: left 0.3s ease;
+}
+
+.toggle-sidebar.close {
+  background-color: #f2f2f2;
+  color: #800080;
+  font-size: x-large;
+  top: 65px; 
+  left: 250px; 
+  z-index: 3; 
+  cursor: pointer;
+  transition: left 0.3s ease; 
+}
+
+.sidebar.expanded .toggle-sidebar {
+  left: calc(100% - 20px); 
+}
+
+.sidebar.expanded .toggle-sidebar.close {
+  left: 10px; 
+}
+
+.sidebar ul li a {
+    padding: 10px;
+}
+
+.sidebar ul li a span {
+  display: none;
+}
+
+.sidebar.expanded span {
+  display: block; /* Show spans when the sidebar is expanded */
+}
+
+
+  main {
+      margin-left: 40px; /* Adjust the margin for smaller screens */
+  }
+
+  .content {
+      flex-direction: column; /* Stack items vertically for smaller screens */
+      text-align: left; /* Adjust text alignment for better readability */
+  }
+
+  .card {
+    margin-left: 20px;
+      width: 80%;
+      height: 150px;
+
+  }
+
+  h3 {
+    font-size: 30px;
+    margin: 0;
+}
+
+p {
+    font-size: 50px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+}

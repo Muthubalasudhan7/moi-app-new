@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="assets/agent_details.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    </head>
+<body>
+
+<!--=============================== TOP RIBBON STARTS HERE======================================================= -->
+    <div class="top-ribbon">
+        <div class="top-ribbon-text">Moi App</div>    
+            <div class="user-info">
+          <span class="user-info-text">Admin-user</span>
+        <i class="fas fa-user-circle user-profile-icon" id="profile-icon"></i> 
+        </div>       
+      </div>
+
+<!-- Pop-up menu -->
+<div class="popup-menu" id="popup-menu">
+    <br>
+    <ul style="list-style-type: none; padding: 0px;">
+        <li style="color: white; margin-left: 20px; margin-top: -15px; margin-bottom: 9px; font-weight: bold;">Welcome, <span id="user-name"></span></li>
+        <li><a href="/admin-change-password" style="color: white; text-decoration: none;"><i class="fas fa-key  popup-menu-item" style="width: 20px;"></i>Change Password</a></li> 
+     <br>
+     <li><a href="/logout" style="color: white; text-decoration: none;"><i class="fas fa-sign-out-alt popup-menu-item" style="width: 20px;"></i>Logout</a></li>
+    <!---<div class="popup-menu-item">Logout</div> -->
+  </ul>
+  </div>
+
+    <div class="sidebar">
+        <nav>
+            <ul>
+                <li><a href="/home"><i class="fas fa-home" style="width: 30px;"></i>Home</a></li>
+                <li><a href="/customer" id="customer-registration-link"><i class="fas fa-user-plus" style="width: 30px;"></i>Customer Registration</a></li>
+                <li><a href="/writer"><i class="fas fa-pencil-alt" style="width: 30px;"></i>Writer Registration</a></li>
+                <li class="active"><a href="/agent" id="agent-registration-link"><i class="fas fa-user-plus" style="width: 30px;"></i>Agent Registration</a></li>
+                <li><a href="/admin-change-password"><i class="fas fa-key" style="width: 30px;"></i>Change Password</a></li>
+                <li><a href="/logout"><i class="fas fa-sign-out-alt" style="width: 30px;"></i>Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <main>
+        <header>
+            <!-- Header content goes here -->
+        </header>
+
+         <section class="content">
+            <h1>Agent Details</h1>
+
+            <div class="toggle-button">
+                <label class="switch"> 
+                    <span class="label">Disable</span>
+                    <input type="checkbox" id="toggleAdminStatus">
+                    <span class="slider"></span>
+                </label>
+            </div>
+    
+            <div id="admin-details" class="admin-details-container">
+                <!-- admin details will be displayed here -->
+            </div>            
+         
+        </section>
+    </main>
+
+    <!-- <footer>
+        <p>&copy; 2023 MOI APP</p>
+    </footer> -->
+
+</body>
+
+<script>
+                      
+    // Extract the customer ID from the query parameter
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const admin_id = urlParams.get('id');
+
+    console.log(admin_id);   
+
+
+// =============================== TO POPULATE THE USER NAME IN THE POPUP MENU ==============================================
+const name = sessionStorage.getItem("name");
+
+const userNameSpan = document.getElementById("user-name");
+    if (userNameSpan) {
+    userNameSpan.textContent = name;
+    }
+
+//========================================================================================================================
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+      // JavaScript to show/hide the pop-up menu
+      const profileIcon = document.getElementById('profile-icon');
+      const popupMenu = document.getElementById('popup-menu');
+  
+      profileIcon.addEventListener('click', () => {
+        console.log("profile icon clicked");
+        popupMenu.style.display = (popupMenu.style.display === 'block') ? 'none' : 'block';
+      });
+  
+      // Close the pop-up menu when clicking outside of it
+      document.addEventListener('click', (e) => {
+        if (!popupMenu.contains(e.target) && e.target !== profileIcon) {
+          popupMenu.style.display = 'none';
+        }
+      });
+
+// --------------------------------- for updating the writer status using toggle ends here ----------------------------------------------------------------------------------
+
+
+//---------------------------------- Fetch the writer data using writer_id and display it--------------------------------------------------------------------------
+    
+    fetch(`/get-single-sub-admin-details?id=${admin_id}`)
+        .then(response => response.json())
+        .then(data => {
+            
+            const adminDetailsContainer = document.getElementById('admin-details');    
+            
+            const table = document.createElement('table');
+            table.classList.add('admin-details-table');
+            
+            // Create a function to add a row with a specified label and value to the left or right table
+            function addAdminInfoRow(label, value) {
+            const row = document.createElement('tr');
+            const labelCell = document.createElement('td');
+            labelCell.textContent = label;
+            labelCell.style.fontWeight = 'bold';
+            const valueCell = document.createElement('td');
+            valueCell.textContent = value;
+            row.appendChild(labelCell);
+            row.appendChild(valueCell);
+
+            table.appendChild(row);
+            }
+
+            console.log(data.user_id);
+
+            const rawDate = new Date(data.admin_dob);
+            const formattedDate = `${rawDate.getDate()}-${rawDate.getMonth() + 1}-${rawDate.getFullYear()}`;
+
+            addAdminInfoRow('Admin Name:', data.name);
+            addAdminInfoRow('Admin Phone No:', data.phone_no);
+            addAdminInfoRow('Admin Alternate Phone No:', data.admin_alternate_phone_no);
+            addAdminInfoRow('Admin Email:', data.email);
+            addAdminInfoRow('Admin DOB:', formattedDate);
+            addAdminInfoRow('Admin Gender:', data.gender);
+            addAdminInfoRow('Admin Address:', data.admin_address);
+            addAdminInfoRow('Admin City:', data.admin_city);
+            addAdminInfoRow('Admin Aadhaar No:', data.aadhaar_no);
+            
+            adminDetailsContainer.appendChild(table);
+
+            const clearFloat = document.createElement('div');
+            clearFloat.classList.add('clear-float');
+            adminDetailsContainer.appendChild(clearFloat);   
+            
+// ------------------------- for updating the writer status using toggle starts here ----------------------------------------------------------------------------------
+       
+            const toggleAdminStatus = document.getElementById("toggleAdminStatus");
+    
+                // Get the writer's ID or any other identifier you need to update the database
+            function getUserStatus() {
+                const user_id = data.user_id; // Replace with the actual admin's ID
+                console.log(user_id);
+
+                fetch(`/get-user-status?user_id=${user_id}`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        const userStatus = data.status; // Assuming the server responds with the user's status (0 or 1)
+
+                        // Set the initial state of the toggle button based on the user's status
+                        toggleAdminStatus.checked = userStatus === 0;
+
+                        toggleAdminStatus.addEventListener("change", function () {
+                    const newStatus = toggleAdminStatus.checked ? 0 : 1; 
+                    console.log(newStatus);
+                    updateUserStatus(user_id, newStatus);
+                });
+            })
+            .catch((error) => {
+                console.error("Error fetching user status:", error);
+            });
+    }  
+
+        // Function to update the user's status on the server
+        function updateUserStatus(user_id, status) {
+                fetch("/update_user_status", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        user_id: user_id,
+                        status: status,
+                    }),
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    // Handle the response from the server
+                    console.log(data.message); 
+                })
+                .catch((error) => {
+                    console.error("Error updating user status:", error);
+                });
+            }
+            getUserStatus();
+        })
+        
+    
+</script>
+
+</html>

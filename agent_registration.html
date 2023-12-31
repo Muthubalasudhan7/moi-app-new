@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writer Vistor Entry Page</title>
+    <link rel="stylesheet" href="assets/agent_registration.css">    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.google.com/jsapi" type="text/javascript"></script>
+
+    <script>
+      let translatedText = ''; // Store the already translated text
+  
+      function translateText(inputField) {
+          const inputText = inputField.value;
+  
+          console.log("input text", inputText);
+  
+          // Check if the user pressed the space bar
+          if (inputText.endsWith(' ')) {
+              // Remove the trailing space
+              let wordsToTranslate = inputText.trim().split(' ');
+              console.log("words to translate", wordsToTranslate);
+  
+              // Translate each word separately and create an array of promises
+              const translationPromises = wordsToTranslate.map(word => {
+                  const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ta&dt=t&q=${encodeURIComponent(word)}`;
+                  return fetch(apiUrl)
+                      .then(response => response.json())
+                      .then(data => data[0][0][0])
+                      .catch(error => {
+                          console.error('Translation error:', error);
+                          return word; // Use the original word on error
+                      });
+              });
+
+              // Wait for all translations to complete
+              Promise.all(translationPromises)
+                  .then(translations => {
+                      // Rejoin the translated words with spaces and update the input field
+                      translatedText = translations.join(' ') + ' ';
+                      console.log("translated text", translatedText);
+                      inputField.value = translatedText;
+                  });
+          }
+      }
+  </script>
+
+    </head>
+    <body >
+
+<!--==================================== TOP RIBBON STARTS HERE ================================================================================ -->
+           <div class="top-ribbon">
+               <div class="top-ribbon-text">Moi App</div>    
+                   <div class="user-info">
+                 <span class="user-info-text">Admin-user</span>
+               <i class="fas fa-user-circle user-profile-icon" id="profile-icon" title="Profile Icon"></i> 
+               </div>       
+             </div>
+       
+<!--========================================================== Pop-up menu ============================================================================ -->
+       <div class="popup-menu" id="popup-menu" >
+         <br>
+         <ul style="list-style-type: none; padding: 0px;">
+           <li style="color: white; margin-left: 20px; margin-top: -15px; margin-bottom: 9px; font-weight: bold;">Welcome, <span id="user-name"></span></li>
+           <li><a href="/admin-change-password" style="color: white; text-decoration: none;"><i class="fas fa-key  popup-menu-item" style="width: 20px;"></i>Change Password</a></li> 
+          <br>
+          <li><a href="/logout" style="color: white; text-decoration: none;"><i class="fas fa-sign-out-alt popup-menu-item" style="width: 20px;"></i>Logout</a></li>
+         <!---<div class="popup-menu-item">Logout</div> -->
+       </ul>
+       </div>
+  <!-- =========================================================================================================================================== -->  
+           <div class="sidebar">
+               <nav>
+                   <ul>
+                    <li><a href="/home"><i class="fas fa-home" style="width: 30px;"></i><span>Home</span></a></li>
+                    <li><a href="/customer" ><i class="fas fa-user-plus" style="width: 30px;"></i><span>Customer Registration</span></a></li>
+                    <li><a href="/writer"><i class="fas fa-pencil-alt" style="width: 30px;"></i><span>Writer Registration</span></a></li>
+                    <li class="active"><a href="/agent" id="agent-registration-link"><i class="fas fa-user-plus" style="width: 30px;"></i><span>Agent Registration</span></a></li>
+                     <li><a href="/admin-change-password"><i class="fas fa-key" style="width: 30px;"></i><span>Change Password</span></a></li>
+                     <li><a href="/logout"><i class="fas fa-sign-out-alt" style="width: 30px;"></i><span>Logout</span></a></li>
+                   </ul>
+               </nav>
+           </div>
+<!-- ========================================================================================================================================= -->
+
+<main>
+    <header>
+        <!-- Header content goes here -->
+    </header>
+
+    <div class="button-and-filter-container">
+        <button class="toggle-sidebar"><i class="fas fa-bars"></i></button>
+
+    <button id="add-agent-button" class="add-button"> Add Agent <i class="fas fa-plus"></i></button>
+    <div class="filter-section">
+        <label for="filter-input">Filter by: </label>
+        <input type="text" id="filter-input" placeholder="Enter Name,Phone,Email,City.." >
+        <button id="apply-filter" class="purple-button">Apply</button>
+        <button id="clear-filter" class="purple-button">Clear</button>
+    </div>
+</div>
+     <section class="content">                       
+        <h2>Agent List</h2>
+        <div id="agent-details-table">
+            <!-- agent details table will be populated here -->
+        </div>
+        <div id="pagination" class="center-pagination">
+            <button id="prev-page">Previous</button>
+            <button id="next-page">Next</button>
+        </div>
+<!-- ======================================================================================================================================== -->
+
+<!--------------------------------------------------- edit writer details form starts here ---------------------------------------------------------->
+
+<div id="editModal" class="editModal">
+    <div class="edit-modal-content">
+        <span class="close">&times;</span> 
+        <h2>Edit Agent</h2>                    
+        <form id="editAdminForm" class="two-column-form" >
+
+            <input type="hidden" id="user_id" name="user_id" value="">
+            <input type="hidden" id="admin_id" name="admin_id" value="">
+
+    <div class="form-column">
+        <div class="form-group">
+            <label for="name" class="required-field">Name</label>
+            <input type="text" id="name" name="name" placeholder="Agent name.." required>
+        </div>
+
+        <div class="form-group">
+            <label for="phone_no" class="required-field">Phone Number</label>
+            <input type="tel" name="phone_no" id="phone_no" placeholder="Agent phone no.." required >
+            <small id="phone_no_error1" class="text-danger" style="color: red;">Please enter a 10-digit phone number.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="altphonenumber" class="required-field">Alternate Phone Number</label>
+            <input type="tel" id="altphonenumber" name="altphonenumber" placeholder="Agent Alternate phone no.." required>
+            <small id="altphonenumber_error1" class="text-danger" style="color: red;">Please enter a 10-digit phone number.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="required-field">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="Agent E-mail address" required>
+        </div>
+
+        <div class="form-group">
+            <label for="gender" class="required-field">Gender</label>
+            <select name="gender" id="gender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Others">Others</option>
+            </select>
+        </div>              
+
+    </div>
+
+    <div class="form-column">
+
+        <div class="form-group">
+                <label for="dateofbirth" class="required-field">Date Of Birth</label>
+                <input type="date" id="dateofbirth" name="dateofbirth" placeholder="Agent date of birth" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="admin_address" class="required-field">Address</label>
+                <textarea name="admin_address" id="admin_address" placeholder="Agent Address.." style="height:50px" required></textarea>
+            </div> 
+                        
+            <div class="form-group">
+                <label for="admin_city" class="required-field">City</label>
+                <input type="text" id="admin_city" name="admin_city" placeholder="Agent city.." required>
+            </div>
+
+            <div class="form-group">
+                <label for="aadhaar_no" class="required-field">Aadhar No</label>
+                <input type="text" id="aadhaar_no" name="aadhaar_no" placeholder="Aadhar No.." required>
+                <small id="edit_aadhaar_no_error" class="text-danger" style="color: red;">Please enter a 12-digit Aadhaar number.</small>
+            </div>
+
+    </div>
+            <input type="submit" class="btn" value="Save Changes">
+          </form>           
+        
+    </div>
+</div>
+
+<!------------------------------------------------ writer registration form starts here ---------------------------------------------------->
+        
+<div id="addModal" class="addModal">
+    <div class="add-modal-content">
+        <span class="close1">&times;</span> 
+        <h2>Agent Registration</h2>                    
+        <form id="admin-registration-form" class="two-column-form">
+
+    <div class="form-column">
+        <div class="form-group">
+            <label for="name" class="required-field">Name</label>
+            <input type="text" id="add-name" name="name" placeholder="Agent name.." required>
+        </div>
+
+        <div class="form-group">
+            <label for="phone_no" class="required-field">Phone Number</label>
+            <input type="tel" id="add-phone_no" name="phone_no" placeholder="Agent phone no.." required >
+            <small id="phone_no_error" class="text-danger" style="color: red;">Please enter a 10-digit phone number.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="altphonenumber" class="required-field">Alternate Phone Number</label>
+            <input type="tel" id="add-altphonenumber" name="altphonenumber" placeholder="Agent Alternate phone no.." required>
+            <small id="altphonenumber_error" class="text-danger" style="color: red;">Please enter a 10-digit phone number.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="required-field">E-mail</label>
+            <input type="email" id="add-email" name="email" placeholder="Agent E-mail address" required>
+        </div>
+
+        <div class="form-group">
+            <label for="gender" class="required-field">Gender</label>
+            <select id="add-gender" name="gender" >
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Others">Others</option>
+            </select>
+        </div>              
+
+    </div>
+
+    <div class="form-column">
+
+        <div class="form-group">
+                <label for="dateofbirth" class="required-field">Date Of Birth</label>
+                <input type="date" id="add-dateofbirth" name="dateofbirth" placeholder="Agent date of birth" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="admin_address" class="required-field">Address</label>
+                <textarea id="add-admin_address" name="admin_address" placeholder="Agent Address.." style="height:50px" required></textarea>
+            </div>
+                        
+            <div class="form-group">
+                <label for="admin_city" class="required-field">City</label>
+                <input type="text" id="add-admin_city" name="admin_city" placeholder="Agent city.." required>
+            </div>
+
+            <div class="form-group">
+                <label for="aadhaar_no" class="required-field">Aadhaar No</label>
+                <input type="text" id="add-aadhaar_no" name="aadhaar_no" placeholder="Aadhaar No.." required>
+                <small id="aadhaar_no_error" class="text-danger" style="color: red;">Please enter a 12-digit Aadhaar number.</small>
+            </div>
+        </div>
+
+            <input type="submit" class="btn" value="Submit">
+          </form>           
+        
+    </div>
+</div>
+    
+    
+</section>
+</main>
+
+
+<footer>
+<p>&copy; 2023 MOI APP</p>
+</footer>
+
+</body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get references to the content area and the "Customer Registration" link
+        const content = document.getElementById("agent-details-table");
+        const agentRegistrationLink = document.getElementById("agent-registration-link");
+        const paginationContainer = document.getElementById("pagination");
+        // Get the modal element
+        const eyeIcons = [];
+        const editIcons = [];
+        const deleteIcons = [];
+        const editAdminForm = document.getElementById("editAdminForm");
+        const closeBtn = document.querySelector(".close");
+        const dobElement = document.getElementById("dob");
+
+        let currentPage = 1;
+
+// =============================== TO POPULATE THE USER NAME IN THE POPUP MENU ==============================================
+const loggedInUserId = sessionStorage.getItem("loggedInUserId");            
+const name = sessionStorage.getItem("name");
+
+            const userNameSpan = document.getElementById("user-name");
+                if (userNameSpan) {
+                userNameSpan.textContent = name;
+                }
+//========================================================================================================================
+
+const toggleSidebarButton = document.querySelector('.toggle-sidebar');
+    const sidebar = document.querySelector('.sidebar');
+    const body = document.querySelector('body');
+
+    toggleSidebarButton.addEventListener('click', function () {
+      body.classList.toggle('expanded');
+      sidebar.classList.toggle('expanded'); // Toggle the 'expanded' class on the sidebar
+
+      // Adjust other elements based on the sidebar state
+      if (sidebar.classList.contains('expanded')) {
+        toggleSidebarButton.innerHTML = '<i class="fas fa-times"></i>'; // X icon for close
+      toggleSidebarButton.classList.add('close');
+      // If the sidebar is expanded, you can add additional logic or styles here
+      } else {
+        toggleSidebarButton.innerHTML = '<i class="fas fa-bars"></i>'; // Bars icon for open
+      toggleSidebarButton.classList.remove('close');
+      // If the sidebar is collapsed, you can add additional logic or styles here
+      }
+    });
+
+/*----------------------------------JavaScript to show/hide the pop-up menu starts here ---------------------------*/
+
+    const profileIcon = document.getElementById('profile-icon');
+    const popupMenu = document.getElementById('popup-menu');
+  
+      profileIcon.addEventListener('click', () => {
+        console.log("profile icon clicked");
+        popupMenu.style.display = (popupMenu.style.display === 'block') ? 'none' : 'block';
+      });
+  
+      // Close the pop-up menu when clicking outside of it
+      document.addEventListener('click', (e) => {
+        if (!popupMenu.contains(e.target) && e.target !== profileIcon) {
+          popupMenu.style.display = 'none';
+        }
+      });
+/*----------------------------------JavaScript to show/hide the pop-up menu ends here ---------------------------*/
+
+//-------------------------------------- Function to create an eye icon --------------------------------------------------
+        function createEyeIcon() {
+                const eyeIcon = document.createElement("i");
+                eyeIcon.classList.add("fas", "fa-eye");
+                eyeIcon.title = "View";
+                console.log("Eye icon created");
+                return eyeIcon;
+            }
+
+//-------------------------------------- Function to create an edit icon --------------------------------------------------
+        function createEditIcon() {
+                const editIcon = document.createElement("i");
+                editIcon.classList.add("fas", "fa-edit"); 
+                editIcon.title = "Edit"; 
+                //console.log("Edit icon created"); 
+                return editIcon;
+            }
+
+//------------------------------------- Function to create a delete icon -----------------------------------------------
+        function createDeleteIcon() {
+                const deleteIcon = document.createElement("i");
+                deleteIcon.classList.add("fas", "fa-trash"); 
+                deleteIcon.title = "Delete"; 
+                return deleteIcon;
+            }
+
+// ====================================================================================================================================
+
+// ==================================== WRITER REGISTRATION FORM AADHAAR NO VALIDATION ===========================================================
+
+const adhaarNoInput = document.getElementById("add-aadhaar_no");
+
+const aadhaarNoError = document.getElementById("aadhaar_no_error");
+aadhaarNoError.style.display = "none";
+const aadhaarNoError1 = document.getElementById("edit_aadhaar_no_error");
+aadhaarNoError1.style.display = "none";
+
+    // Add an input event listener to the input field
+    adhaarNoInput.addEventListener("input", function (event) {
+        const inputValue = event.target.value;
+
+        const numericValue = inputValue.replace(/[^0-9]/g, "");
+
+        event.target.value = numericValue;
+        
+
+            if (/^\d{12}$/.test(numericValue)) {
+                aadhaarNoError.style.display = "none";
+            } else {
+                aadhaarNoError.style.display = "block";
+            }
+    });
+
+      adhaarNoInput.addEventListener("blur", function (event) { 
+        const inputValue = event.target.value;
+
+        if (inputValue.length === 12) {
+            event.target.value = inputValue;
+        } else {
+            event.target.value = "";
+            alert("Please enter a valid 12-digit Aadhar number.");
+        }
+    });
+
+
+        const editAdhaarNoInput = document.getElementById("aadhaar_no");
+
+        editAdhaarNoInput.addEventListener("input", function (event) {
+        const inputValue = event.target.value;
+
+        const numericValue = inputValue.replace(/[^0-9]/g, "");
+
+        event.target.value = numericValue;        
+
+            if (/^\d{12}$/.test(numericValue)) {
+                aadhaarNoError1.style.display = "none";
+            } else {
+                aadhaarNoError1.style.display = "block";
+            }
+    });
+
+    editAdhaarNoInput.addEventListener("blur", function (event) { 
+        const inputValue = event.target.value;
+
+        if (inputValue.length === 12) {
+            event.target.value = inputValue;
+        } else {
+            event.target.value = "";
+            alert("Please enter a valid 12-digit Aadhar number.");
+        }
+    });
+
+
+// =============================== PHONE NO & ALT PHONE NO VALIDATION CODE ====================================================
+
+    var phoneNoError = document.getElementById("phone_no_error");
+        phoneNoError.style.display = "none";
+        var altPhoneNoError = document.getElementById("altphonenumber_error");
+        altPhoneNoError.style.display = "none";
+
+        document.getElementById("add-phone_no").addEventListener("input", function () {
+            var phoneNoInput = this.value;
+            const numericValue = phoneNoInput.replace(/[^0-9]/g, "");
+
+            if (/^\d{10}$/.test(numericValue)) {
+                phoneNoError.style.display = "none";
+            } else {
+                phoneNoError.style.display = "block";
+            }
+            this.value = numericValue;
+        });
+
+        document.getElementById("add-altphonenumber").addEventListener("input", function () {
+        var altPhoneNoInput = this.value;
+        const numericValue = altPhoneNoInput.replace(/[^0-9]/g, "");
+
+        if (/^\d{10}$/.test(numericValue)) {
+            altPhoneNoError.style.display = "none";
+        } else {
+            altPhoneNoError.style.display = "block";
+        }
+        this.value = numericValue;
+    });
+    
+    var phoneNoError1 = document.getElementById("phone_no_error1");
+    phoneNoError1.style.display = "none";
+    var altPhoneNoError1 = document.getElementById("altphonenumber_error1");
+    altPhoneNoError1.style.display = "none";
+    
+    document.getElementById("phone_no").addEventListener("input", function () {
+            var phoneNoInput = this.value;
+            const numericValue = phoneNoInput.replace(/[^0-9]/g, "");
+
+            if (/^\d{10}$/.test(numericValue)) {
+                phoneNoError1.style.display = "none";
+            } else {
+                phoneNoError1.style.display = "block";
+            }
+            this.value = numericValue;
+        });
+
+        document.getElementById("altphonenumber").addEventListener("input", function () {
+        var altPhoneNoInput = this.value;
+        const numericValue = altPhoneNoInput.replace(/[^0-9]/g, "");
+
+        if (/^\d{10}$/.test(numericValue)) {
+            altPhoneNoError1.style.display = "none";
+        } else {
+            altPhoneNoError1.style.display = "block";
+        }
+        this.value = numericValue;
+    });
+
+// ================================================================================================================================================
+
+//-------------------------------------------------- Filter functionality starts here ------------------------------------------------------------------------
+
+const filterInput = document.getElementById("filter-input");
+            const applyFilterButton = document.getElementById("apply-filter");
+            const clearFilterButton = document.getElementById("clear-filter");
+            let filteredData = [];
+
+        applyFilterButton.addEventListener("click", function () {
+        const filterCriteria = filterInput.value.trim();
+        
+        if (filterCriteria === "") {
+            alert("Please enter a valid filter criteria.");
+            return; 
+        }
+
+        applyFilter(filterCriteria);
+        });
+
+            // Add event listener for the "Clear Filter" button
+        clearFilterButton.addEventListener("click", function () {
+            // Clear the filter input fields
+            filterInput.value = "";
+            
+            clearFilter();
+            //fetchAndDisplayWriterDetails();
+        });
+
+
+            // Function to apply the filter
+    function applyFilter(filterCriteria) {
+        // Fetch the admin data and filter based on phone and email
+        fetch("/get-sub-admin-details")
+            .then(response => response.json())
+            .then(data => {
+                const filteredData = data.filter(admin => {                   
+                    
+                    const adminPhone = admin.phone_no.toLowerCase();
+                    const adminName = admin.name.toLowerCase();
+                    const adminCity = admin.admin_city.toLowerCase();
+                    const adminEmail = admin.email.toLowerCase();
+                    const adminAlternatePhoneNo = admin.admin_alternate_phone_no.toLowerCase();
+                    
+                    // Check if the Admin's phone or email matches the filter criteria
+                    return (
+                        adminPhone.includes(filterCriteria.toLowerCase()) ||
+                        adminName.includes(filterCriteria.toLowerCase()) ||
+                        adminCity.includes(filterCriteria.toLowerCase()) ||
+                        adminEmail.includes(filterCriteria.toLowerCase()) ||
+                        adminAlternatePhoneNo.includes(filterCriteria.toLowerCase())
+                        );                        
+                });
+                console.log(filteredData);
+
+                currentPage = 1;
+                displayFilteredAdminDetails(filteredData);
+            })
+            .catch(error => {
+                console.error("Error fetching Admin details:", error);
+            });
+    }
+
+    // Function to display filtered Admin details
+    function displayFilteredAdminDetails(filteredData) {
+        console.log("displayFilteredAdminDetails called");
+        const content = document.getElementById("agent-details-table");
+
+        console.log(filteredData.length);
+
+            // Clear the content area
+            content.innerHTML = "";
+
+            const rowsPerPage = 10;
+            totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            console.log(totalPages);
+
+            // Update the pagination controls
+            paginationContainer.innerHTML = `
+            <button id="prev-page" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+            <span>Page ${currentPage} of ${totalPages}</span>
+            <button id="next-page" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+            `;
+
+            const table = document.createElement("table");
+            table.classList.add("agent-table");
+
+            // Create table headers
+            const headers = ["SI No", "Name", "Phone No", "Email", "Address", "City", "Actions"];
+            const headerRow = document.createElement("tr");
+            headers.forEach(headerText => {
+                const headerCell = document.createElement("th");
+                headerCell.textContent = headerText;
+                headerRow.appendChild(headerCell);
+            });
+            table.appendChild(headerRow);
+
+            // Create a container for the header
+            const headerContainer = document.createElement("div");
+            headerContainer.classList.add("header-container");
+            headerContainer.appendChild(table);
+
+            const rowContainer = document.createElement("div");
+            rowContainer.classList.add("row-container");
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+
+            let serialNumber = startIndex + 1 ;
+
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            console.log("pageData", pageData);
+            // Iterate through filtered data and create containers for each row
+            pageData.forEach(admin => {
+                // console.log(writer);
+
+                const row = document.createElement("tr");
+                const siNoCell = document.createElement("td");
+                siNoCell.textContent = serialNumber++;
+                row.appendChild(siNoCell);
+
+                const dob = new Date(admin.writer_dob);
+                const year = dob.getFullYear();
+                const month = (dob.getMonth() + 1).toString().padStart(2, '0');
+                const day = dob.getDate().toString().padStart(2, '0');
+                const formattedDob = `${year}-${month}-${day}`;
+
+                    const nameCell = document.createElement("td");
+                    const nameLink = document.createElement("a");
+                    nameLink.href = `agent_details.html?id=${admin.admin_id}`; 
+                    nameLink.style.textDecoration = "none";
+                    nameLink.textContent = admin.name;
+                    
+                    nameCell.appendChild(nameLink);
+                    row.appendChild(nameCell);
+
+                    nameLink.addEventListener("click", (e) => {
+                        e.preventDefault(); // Prevent the default link behavior
+                        // Navigate to the writer_details page with the specific writer's data
+                        window.location.href = nameLink.href;
+                    });
+
+                    const phoneNoCell = document.createElement("td");
+                    phoneNoCell.textContent = admin.phone_no;
+
+                    if (admin.admin_alternate_phone_no) {
+                        phoneNoCell.textContent += `, ${admin.admin_alternate_phone_no}`;
+                    }
+
+                    row.appendChild(phoneNoCell);
+
+                const cells = [
+                    // writer.name,
+                    // writer.phone_no,
+                    admin.email,                    
+                    admin.admin_address,
+                    admin.admin_city,                    
+                ];
+
+                cells.forEach((cellText, index) => {
+                    const cell = document.createElement("td");
+                    cell.textContent = cellText;
+                    row.appendChild(cell);
+
+                    if (index === cells.length - 1) {
+                        const actionsCell = document.createElement("td");
+
+                        // Create edit and delete icons
+                        const eyeIcon = createEyeIcon();
+                        const editIcon = createEditIcon();
+                        const deleteIcon = createDeleteIcon();
+
+                        eyeIcon.style.marginRight = "5px";
+                        editIcon.style.marginRight = "5px";
+
+                        eyeIcon.addEventListener("click", (e) => {
+                            e.preventDefault(); 
+                            window.location.href = nameLink.href;
+                        });
+
+                        actionsCell.appendChild(eyeIcon);
+                        actionsCell.appendChild(editIcon);
+                        actionsCell.appendChild(deleteIcon);
+
+                        row.appendChild(actionsCell);
+
+                        eyeIcons.push(eyeIcon);
+                        editIcons.push(editIcon);
+                        deleteIcons.push(deleteIcon);
+
+                        row.dataset.admin_id = admin.admin_id;
+                        row.dataset.user_id = admin.user_id;                                                 
+
+                    } else {
+                        row.appendChild(cell);
+                    }
+                });
+
+                table.appendChild(row);
+            });
+
+            // Append the table to the row container
+            rowContainer.appendChild(table);
+
+            // Append the header and rows container to the content area
+            content.appendChild(headerContainer);
+            content.appendChild(rowContainer);
+
+            let admin = {};
+
+            editIcons.forEach(editIcon => {
+                            editIcon.addEventListener("click", function () {
+                                console.log("Edit icon clicked"); 
+                                const row = editIcon.closest("tr");
+                                const admin_id = row.dataset.admin_id;
+                                console.log("admin id ",admin_id);
+
+                                fetch(`/api/get-sub-admin-details-by-id?id=${admin_id}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        console.log("data:",data);
+                                        const dob = new Date(data.admin_dob);
+                                        const year = dob.getFullYear();
+                                        const month = (dob.getMonth() + 1).toString().padStart(2, '0');
+                                        const day = dob.getDate().toString().padStart(2, '0');
+                                        const formattedDob = `${year}-${month}-${day}`;
+                                       const { phone_no,admin_alternate_phone_no,gender,aadhaar_no,admin_id ,user_id} = data; 
+                                       
+                                       console.log("user_id",user_id);
+                                       console.log("admin_id",admin_id);
+
+                                const admin = {
+                                    name: row.cells[1].textContent,
+                                    phone_no: phone_no,
+                                    email: row.cells[3].textContent,
+                                    admin_address: row.cells[4].textContent,                                    
+                                    admin_city: row.cells[5].textContent,
+                                    admin_alternate_phone_no: admin_alternate_phone_no,
+                                    gender: gender, 
+                                    dateofbirth: formattedDob,
+                                    aadhaar_no : aadhaar_no,
+                                    admin_id : admin_id,
+                                    user_id: user_id,
+                                };
+                                console.log("calling displayEditForm from filtered");
+                                // Handle the edit action by opening the modal
+                                    displayEditForm(admin);
+                                });
+                            });
+                        });                               
+
+            deleteIcons.forEach(deleteIcon => {
+                // Inside your loop for creating rows and adding icons:
+                deleteIcon.addEventListener("click", function () {
+                    console.log("delete icon clicked"); 
+                    let filterInput = document.getElementById("filter-input");
+                    let filterValue = filterInput.value;
+                    // Get the writer_id associated with the clicked row
+                    const row = deleteIcon.closest("tr");
+                    const user_id = row.dataset.user_id;
+                    console.log("user id",user_id);
+
+                    // Confirm if the user wants to delete
+                    const confirmDelete = confirm("Are you sure you want to delete this Admin?");
+                    if (confirmDelete) {
+                        // Send an HTTP request to delete the Admin with this writer_id
+                        fetch(`/delete-admin/${user_id}`, {
+                            method: "DELETE",
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Admin deleted successfully");
+                                // Update the UI by fetching and displaying Admin details again
+                                filterInput.value = ''; 
+                                fetchAndDisplayAdminDetails();
+                            } else {
+                                alert("Failed to delete Admin");
+                                fetchAndDisplayAdminDetails();
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            alert("An error occurred while deleting Admin");
+                        });
+                    }
+                });
+            });
+
+
+            const prevPageButton = document.getElementById("prev-page");
+                const nextPageButton = document.getElementById("next-page");
+
+                prevPageButton.addEventListener("click", function () {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        displayFilteredAdminDetails(filteredData);
+                    }
+                });
+
+                nextPageButton.addEventListener("click", function () {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        displayFilteredAdminDetails(filteredData);
+                    }
+                });       
+        }
+
+
+        //--------------------------- Function to fetch and display writer details-----------------------------------------------
+        
+        function fetchAndDisplayAdminDetails() {
+            //console.log("fetchAndDisplayWriterDetails called");
+            fetch("/get-sub-admin-details") // Replace with the actual URL
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    
+                    // Clear the content area
+                    content.innerHTML = "";
+                    
+                    const rowsPerPage = 10;                              
+
+                    totalPages = Math.ceil(data.length / rowsPerPage);
+
+                     // Update the pagination controls
+                    paginationContainer.innerHTML = `
+                        <button id="prev-page" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                        <span>Page ${currentPage} of ${totalPages}</span>
+                        <button id="next-page" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+                    `;
+
+                     // Create a table to display writer details
+                    const table = document.createElement("table");
+                    table.classList.add("agent-table");
+
+                    // Create table headers
+                    const headers = ["SI No", "Name", "Phone No", "Email", "Address", "City", "Actions"];
+                    const headerRow = document.createElement("tr");
+                    headers.forEach(headerText => {
+                        const headerCell = document.createElement("th");
+                        headerCell.textContent = headerText;
+                        headerRow.appendChild(headerCell);
+                    });
+                    table.appendChild(headerRow);
+
+                    // Create a container for the header
+                    const headerContainer = document.createElement("div");
+                    headerContainer.classList.add("header-container");
+                    headerContainer.appendChild(table);
+
+                    // Create a table for the row data
+                    const dataTable = document.createElement("table");
+                    dataTable.classList.add("data-table");                   
+                            
+                    // Calculate the start and end indexes for the current page
+                    const startIndex = (currentPage - 1) * rowsPerPage;
+                    const endIndex = startIndex + rowsPerPage;
+                    
+                    // Slice the data for the current page
+                    const pageData = data.slice(startIndex, endIndex); 
+                    
+                    const calculateSINo = (index) => {
+                        return startIndex + index + 1; // Add 1 to start from 1 instead of 0
+                    };
+                    
+            //Iterate through customer data and create containers for each row
+                pageData.forEach((admin, index) => {  
+                    //console.log("Inside loop for admin:", admin);                   
+
+                    const row = document.createElement("tr");
+
+                    const siNoCell = document.createElement("td");
+                    siNoCell.textContent = calculateSINo(index);
+                    row.appendChild(siNoCell);
+
+                    const nameCell = document.createElement("td");
+                    //nameCell.textContent = writer.name;
+                    const nameLink = document.createElement("a");
+                    nameLink.href = `agent_details.html?id=${admin.admin_id}`; 
+                    nameLink.style.textDecoration = "none";
+                    nameLink.textContent = admin.name;
+                    
+                    nameCell.appendChild(nameLink);
+                    row.appendChild(nameCell);
+
+                    nameLink.addEventListener("click", (e) => {
+                        e.preventDefault(); // Prevent the default link behavior
+                        // Navigate to the writer_details page with the specific writer's data
+                        window.location.href = nameLink.href;
+                    });
+
+                    const phoneNoCell = document.createElement("td");
+                    phoneNoCell.textContent = admin.phone_no;
+
+                    if (admin.admin_alternate_phone_no) {
+                        phoneNoCell.textContent += `, ${admin.admin_alternate_phone_no}`;
+                    }
+
+                    row.appendChild(phoneNoCell);
+
+                        const cells = [
+                            // writer.name,
+                            // writer.phone_no,
+                            admin.email,
+                            admin.admin_address,
+                            admin.admin_city,
+                            // writer.writer_alternate_phone_no,
+                            //writer.user_id,                            
+                        ];
+                        cells.forEach((cellText, index) => {
+                            const cell = document.createElement("td");
+                            cell.textContent = cellText;
+                            row.appendChild(cell); 
+
+                            if (index === cells.length -1) {
+                                const actionsCell = document.createElement("td");
+
+                                // Create eye, edit and delete icons
+                                const eyeIcon = createEyeIcon();
+                                const editIcon = createEditIcon();
+                                const deleteIcon = createDeleteIcon();                                
+
+                                eyeIcon.style.marginRight = "5px";
+                                editIcon.style.marginRight = "5px";
+
+                                eyeIcon.addEventListener("click", (e) => {
+                                    e.preventDefault(); 
+                                    //console.log("eye icon clicked");
+                                    window.location.href = nameLink.href;
+                                });
+
+                                actionsCell.appendChild(eyeIcon);
+                                actionsCell.appendChild(editIcon);
+                                actionsCell.appendChild(deleteIcon);
+
+                                row.appendChild(actionsCell);
+
+                                eyeIcons.push(eyeIcon);
+                                editIcons.push(editIcon);
+                                deleteIcons.push(deleteIcon); 
+                                
+                                row.dataset.admin_id = admin.admin_id;
+                                row.dataset.user_id = admin.user_id;                                                 
+
+                            } else {
+                                row.appendChild(cell);
+                                }                            
+                        });
+
+                        table.appendChild(row);                                    
+                                          
+                        content.appendChild(headerContainer);
+                        content.appendChild(table);          
+                })
+
+
+                
+                //let writer = {};
+
+                editIcons.forEach(editIcon => {
+                            editIcon.addEventListener("click", function () {
+                                console.log("Edit icon clicked"); 
+                                        // Get the writer data associated with the clicked row
+                                const row = editIcon.closest("tr");
+                                const admin_id = row.dataset.admin_id;
+                                console.log("admin id ",admin_id);
+                              
+                                fetch(`/api/get-sub-admin-details-by-id?id=${admin_id}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        //console.log("data:",data);
+                                        const dob = new Date(data.admin_dob);
+                                        const year = dob.getFullYear();
+                                        const month = (dob.getMonth() + 1).toString().padStart(2, '0');
+                                        const day = dob.getDate().toString().padStart(2, '0');
+                                        const formattedDob = `${year}-${month}-${day}`;
+                                       const { phone_no,admin_alternate_phone_no,gender,aadhaar_no,admin_id ,user_id} = data; 
+                                       //console.log(formattedDob);
+                                const admin = {
+                                    name: row.cells[1].textContent,
+                                    phone_no: phone_no,
+                                    email: row.cells[3].textContent,
+                                    admin_address: row.cells[4].textContent,                                    
+                                    admin_city: row.cells[5].textContent,
+                                    admin_alternate_phone_no: admin_alternate_phone_no,
+                                    gender: gender, 
+                                    dateofbirth: formattedDob,
+                                    aadhaar_no : aadhaar_no,
+                                    admin_id : admin_id,
+                                    user_id: user_id,
+                                };
+                                console.log("admin",admin);
+                                // Handle the edit action by opening the modal
+                                    displayEditForm(admin);
+                                });
+                            });
+                        });
+
+                deleteIcons.forEach(deleteIcon => {
+                // Inside your loop for creating rows and adding icons:
+                deleteIcon.addEventListener("click", function () {
+                    console.log("delete icon clicked"); 
+                    // Get the writer_id associated with the clicked row
+                    const row = deleteIcon.closest("tr");
+                    const user_id = row.dataset.user_id;
+                    console.log("user id",user_id);
+
+                    // Confirm if the user wants to delete
+                    const confirmDelete = confirm("Are you sure you want to delete this admin?");
+                    if (confirmDelete) {
+                        // Send an HTTP request to delete the admin with this admin_id
+                        fetch(`/delete-admin/${user_id}`, {
+                            method: "DELETE",
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Admin deleted successfully");
+                                // Update the UI by fetching and displaying Admin details again
+                                fetchAndDisplayAdminDetails();
+                            } else {
+                                alert("Failed to delete Admin");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            alert("An error occurred while deleting Admin");
+                        });
+                    }
+                });
+            });                
+                })
+                .catch(error => {
+                    console.error("Error fetching Writer details:", error);
+                }); 
+             
+        // Add click event listeners to pagination buttons
+        paginationContainer.addEventListener("click", function (event) {
+            if (event.target.id === "prev-page" && currentPage > 1) {
+                currentPage--;
+                fetchAndDisplayAdminDetails();
+            } else if (event.target.id === "next-page" && currentPage < totalPages) {
+                currentPage++;
+                console.log("second page called");
+                fetchAndDisplayAdminDetails();
+            }
+        }); 
+                      
+        }
+
+        // Function to clear the filter and display all admin details
+            function clearFilter() {
+                // Fetch and display all admin details
+                fetchAndDisplayAdminDetails();
+            }
+
+            
+        // Function to open the modal with Writer data
+        function displayEditForm(admin) {
+            // Populate the form fields with Writer data
+            const modal = document.querySelector("#editModal");         
+            modal.style.display = "block";              
+
+            //document.querySelector(".content").style.display = "block";
+            document.querySelector("#editAdminForm input[name='user_id']").value = admin.user_id;
+            document.querySelector("#editAdminForm input[name='admin_id']").value = admin.admin_id;
+            document.querySelector("#editAdminForm input[name='name']").value = admin.name;
+            document.querySelector("#editAdminForm input[name='phone_no']").value = admin.phone_no;
+            document.querySelector("#editAdminForm input[name='email']").value = admin.email;
+            const genderSelect = document.querySelector("#editAdminForm select[name='gender']");
+            genderSelect.value = admin.gender;
+            document.querySelector("#editAdminForm input[name='dateofbirth']").value = admin.dateofbirth;
+            document.querySelector("#editAdminForm textarea[name='admin_address']").value = admin.admin_address;
+            document.querySelector("#editAdminForm input[name='admin_city']").value = admin.admin_city;
+            document.querySelector("#editAdminForm input[name='aadhaar_no']").value = admin.aadhaar_no;
+            document.querySelector("#editAdminForm input[name='altphonenumber']").value = admin.admin_alternate_phone_no;
+            
+    }
+
+    editAdminForm.addEventListener("submit", function (event) {
+            event.preventDefault();            
+            console.log("submit button clicked");
+
+            let filterInput = document.getElementById("filter-input");
+            let filterValue = filterInput.value;
+           
+            const user_id = document.getElementById('user_id').value;
+            const admin_id = document.getElementById('admin_id').value;
+            const name = document.getElementById('name').value;
+            const phone_no = document.getElementById('phone_no').value;
+            const email = document.getElementById('email').value;
+            const gender = document.getElementById('gender').value;
+            const dateofbirth = document.getElementById('dateofbirth').value;
+            const admin_address = document.getElementById('admin_address').value;
+            const admin_city = document.getElementById('admin_city').value;
+            const altphonenumber = document.getElementById('altphonenumber').value;
+            const aadhaar_no = document.getElementById('aadhaar_no').value;
+            
+           //const customerAddress = formData.get("customer_address");
+            fetch("/update-sub-admin-data", {
+                method: "POST",
+                headers:{
+                    'Content-Type':'application/json',
+                 },
+                body: JSON.stringify({admin_id,name,phone_no,email,gender,dateofbirth,admin_address,admin_city,altphonenumber,aadhaar_no,user_id}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data);
+                if (data.success) {
+                    alert("admin data updated successfully");
+                    filterInput.value = ''; 
+                    fetchAndDisplayAdminDetails();
+                    // Handle success, e.g., close modal or update UI
+                } else {
+                    alert("Failed to update admin data");
+                    // Handle failure
+                    fetchAndDisplayAdminDetails();
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while updating writer data");
+            });
+            closeModal();
+        });
+    
+    
+const addAdminButton = document.getElementById("add-agent-button");
+const addModal = document.getElementById("addModal");
+
+addAdminButton.addEventListener("click", function () {
+  addModal.style.display = "block";
+});
+
+const closeButton = document.querySelector(".close1");
+closeButton.addEventListener("click", function () {
+  addModal.style.display = "none";
+  form.reset();
+});
+        
+        // Function to close the modal
+        function closeModal() {
+            const editModal = document.querySelector(".editModal");
+            editModal.style.display = "none";
+            //editFormContainer.style.display = "none";
+            document.querySelector(".content").style.display = "block";
+            //content.style.display = "block"; // Show the writer details table           
+        }
+
+        // Add event listener to close button
+        closeBtn.addEventListener("click", closeModal);
+
+            
+        //Initially fetch and display writer details when the page loads
+        fetchAndDisplayAdminDetails();
+
+///////////////////------------ Add writer button click event starts (Writer Registration submission)-----------///////////////////////////////
+        
+const form = document.getElementById('admin-registration-form');
+  
+  form.addEventListener('submit', function (event) {
+    event.preventDefault(); // Prevent default form submission
+    
+    // const formData = new FormData(form);
+    const name = document.getElementById('add-name').value;
+    const phone_no = document.getElementById('add-phone_no').value;
+    const email = document.getElementById('add-email').value;
+    const gender = document.getElementById('add-gender').value;
+    const dateofbirth = document.getElementById('add-dateofbirth').value;
+    const admin_address = document.getElementById('add-admin_address').value;
+    const admin_city = document.getElementById('add-admin_city').value;
+    const altphonenumber = document.getElementById('add-altphonenumber').value;
+    const aadhaar_no = document.getElementById('add-aadhaar_no').value;
+
+    
+    fetch('/insert-sub-admin-data', {
+      method: 'POST',
+      headers:{
+                  'Content-Type':'application/json',
+                 },
+      body: JSON.stringify({name,phone_no,email,gender,dateofbirth,admin_address,admin_city,altphonenumber,aadhaar_no,loggedInUserId}),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+                        alert("Admin data inserted successfully");
+                        window.location.href = '/agent'; 
+                        } else {
+                        alert("Failed to insert admin data");
+                        window.location.href = '/agent'; 
+                            }
+      // alert(data); // Display the response from the server
+      form.reset(); // Clear the form
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      alert("An error occurred while inserting admin data");
+    });
+  }); 
+
+///////////////////--------------- Add writer button click event ends(Writer Registration submission)---------------///////////////////////////////
+        
+    });
+</script>
+
+</html>

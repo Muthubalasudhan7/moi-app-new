@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Home Page</title>
+    <link rel="stylesheet" href="assets/customer_home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    </head>
+<body >
+
+  <div class="top-ribbon">
+    <div class="top-ribbon-text">Moi App</div>    
+        <div class="user-info">
+      <span class="user-info-text">customer-user</span>
+    <i class="fas fa-user-circle user-profile-icon" id="profile-icon"></i> 
+    </div>       
+  </div>
+
+     <!-- Pop-up menu -->
+<div class="popup-menu" id="popup-menu">
+  <br>
+  <ul style="list-style-type: none; padding: 0px;">
+    <li class="welcome-message" style="color: white; margin-left: 20px; margin-top: -15px; margin-bottom: 9px; font-weight: bold;">வணக்கம், <span id="user-name"></span></li>
+   <li><a href="/customer-change-password" class="menu-item" style="color: white; text-decoration: none;"><i class="fas fa-key  popup-menu-item" style="width: 20px;"></i>கடவுச்சொல் மாற்றும் பக்கம்</a></li> 
+   <br>
+   <li><a href="/logout" class="menu-item" style="color: white; text-decoration: none;"><i class="fas fa-sign-out-alt popup-menu-item" style="width: 20px;"></i>வெளியேறும் பக்கம்</a></li>
+  <!---<div class="popup-menu-item">Logout</div> -->
+</ul>
+</div>
+  
+    <div class="sidebar">
+        <nav>
+            <ul>
+                <li class="active"><a href="/customer_home"><i class="fas fa-home" style="width: 30px;"></i><span class="menu-item">முகப்பு பக்கம்</span></a></li>
+                <li><a href="/customer-change-password"><i class="fas fa-key" style="width: 30px;"></i><span class="menu-item">கடவுச்சொல் மாற்றும் பக்கம்</span></a></li>
+                <li><a href="/logout"><i class="fas fa-sign-out-alt" style="width: 30px;"></i><span class="menu-item">வெளியேறும் பக்கம்</span></a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <main>
+        <header>
+            <!-- Header content goes here -->
+        </header>
+        <h1>விஷேச பட்டியல்</h1> 
+         <section class="content">
+          <table id="functionsTable">
+            <thead>
+                <tr>
+                    <th>Function ID</th>
+                    <th>Function Name</th>
+                    <th>Function Date</th>
+                    <th>Function City</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JavaScript code will dynamically populate this tbody -->
+            </tbody>
+        </table>
+
+            </section>
+    </main>
+
+    <!-- <footer>
+        <p>&copy; 2023 MOI APP</p>
+    </footer> -->
+</body>
+
+<script>
+
+    const loggedInUserId = sessionStorage.getItem("loggedInUserId");
+    const name = sessionStorage.getItem("name");
+    const functions = JSON.parse(sessionStorage.getItem("functions"));
+
+    console.log("user id in customer",loggedInUserId);
+    console.log("function data for this customer",functions);
+
+    const userNameSpan = document.getElementById("user-name");
+        if (userNameSpan) {
+        userNameSpan.textContent = name;
+        }
+   
+            // Get the tbody element
+    const tbody = document.querySelector('#functionsTable tbody');
+
+// Iterate through functions and create rows
+functions.forEach(function (func) {
+    // Create a new row
+    const row = document.createElement('tr');
+
+    // Create cells and populate with data
+    const idCell = document.createElement('td');
+    idCell.textContent = func.function_id;
+    row.appendChild(idCell);
+
+    const nameCell = document.createElement('td');
+    const nameLink = document.createElement("a");
+    nameLink.href = `customer_dashboard?id=${func.function_id}`; 
+    nameLink.style.textDecoration = "none";
+    nameLink.textContent = func.function_name;
+    nameCell.appendChild(nameLink);
+    row.appendChild(nameCell);
+
+    nameLink.addEventListener("click", (e) => {
+          e.preventDefault(); 
+          window.location.href = nameLink.href;
+        });
+
+    const dateCell = document.createElement('td');
+    const formattedDate = new Date(func.function_date).toLocaleDateString('en-GB');
+
+    dateCell.textContent = formattedDate;
+    row.appendChild(dateCell);
+
+    const cityCell = document.createElement('td');
+    cityCell.textContent = func.function_city;
+    row.appendChild(cityCell);
+
+    // Append the row to the tbody
+    tbody.appendChild(row);
+});
+
+  /*--------------------------------------------------------------------------------------------*/
+       // JavaScript to show/hide the pop-up menu
+       const profileIcon = document.getElementById('profile-icon');
+       const popupMenu = document.getElementById('popup-menu');
+   
+       profileIcon.addEventListener('click', () => {
+         console.log("profile icon clicked");
+         popupMenu.style.display = (popupMenu.style.display === 'block') ? 'none' : 'block';
+       });
+   
+       // Close the pop-up menu when clicking outside of it
+       document.addEventListener('click', (e) => {
+         if (!popupMenu.contains(e.target) && e.target !== profileIcon) {
+           popupMenu.style.display = 'none';
+         }
+       });
+ //-------------------------------------------------------------------------------------------------------------------------
+       
+ </script>
+
+</html>
